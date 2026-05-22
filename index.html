@@ -1617,6 +1617,335 @@
         }
 
         /* ── RESPONSIVE ── */
+        /* ══════════════════════════════════════
+       PROJECT ZOOM OVERLAY
+    ══════════════════════════════════════ */
+        .proj-zoom-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(4, 3, 0, 0);
+            backdrop-filter: blur(0px);
+            transition: background .5s ease, backdrop-filter .5s ease;
+            pointer-events: none;
+        }
+
+        .proj-zoom-overlay.active {
+            background: rgba(4, 3, 0, 0.92);
+            backdrop-filter: blur(18px);
+            pointer-events: all;
+        }
+
+        /* The "zoomed laptop" wrapper that scales up from the real laptop position */
+        .zoom-laptop-wrap {
+            width: min(88vw, 820px);
+            transform: scale(0.18) translateY(60px);
+            opacity: 0;
+            transition: transform .65s cubic-bezier(.16, 1, .3, 1), opacity .5s ease;
+            transform-origin: center center;
+            position: relative;
+        }
+
+        .proj-zoom-overlay.active .zoom-laptop-wrap {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        /* Zoomed screen shell */
+        .zoom-bezel {
+            background: linear-gradient(135deg, #1a1510, #0d0b07, #1a1510);
+            border-radius: 14px 14px 6px 6px;
+            border: 2px solid rgba(201, 168, 76, 0.3);
+            padding: 14px 14px 10px;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, .9), 0 40px 80px rgba(0, 0, 0, .9), 0 0 60px rgba(201, 168, 76, 0.08);
+        }
+
+        .zoom-webcam {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            margin: 0 auto 7px;
+        }
+
+        .zoom-screen {
+            background: #000;
+            border-radius: 6px;
+            aspect-ratio: 16/10;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #111;
+        }
+
+        /* Inner screen content */
+        .zoom-screen-inner {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #0a0800, #030303, #080600);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .zoom-screen-inner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(201, 168, 76, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(201, 168, 76, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .zoom-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            border-bottom: 1px solid rgba(201, 168, 76, 0.12);
+            background: rgba(0, 0, 0, 0.6);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .zoom-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .zoom-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: opacity .2s;
+        }
+
+        .zoom-dot:hover {
+            opacity: .7;
+        }
+
+        .zoom-dot.r {
+            background: #ff5f57;
+        }
+
+        .zoom-dot.y {
+            background: #febc2e;
+        }
+
+        .zoom-dot.g {
+            background: #28c840;
+        }
+
+        .zoom-bar-title {
+            font-family: 'Space Mono', monospace;
+            font-size: .65rem;
+            color: var(--muted);
+            letter-spacing: 2px;
+        }
+
+        .zoom-bar-link {
+            font-family: 'Space Mono', monospace;
+            font-size: .58rem;
+            color: var(--gold);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+        }
+
+        .zoom-bar-link:hover {
+            color: var(--gold-light);
+        }
+
+        /* Project content inside zoom */
+        .zoom-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 24px;
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity .4s ease .4s, transform .4s ease .4s;
+        }
+
+        .proj-zoom-overlay.active .zoom-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .zoom-badge {
+            font-family: 'Space Mono', monospace;
+            font-size: .65rem;
+            color: var(--scarlet-b);
+            border: 1px solid rgba(166, 28, 28, .3);
+            background: var(--scarlet-dim);
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .zoom-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+
+        .zoom-title .zt-gold {
+            color: var(--gold);
+        }
+
+        .zoom-desc {
+            font-size: .82rem;
+            color: var(--muted);
+            line-height: 1.75;
+            margin-bottom: 14px;
+            flex: 1;
+        }
+
+        .zoom-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .zoom-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: .65rem;
+            color: var(--gold);
+            background: var(--gold-dim);
+            padding: 4px 10px;
+            border: 1px solid rgba(201, 168, 76, .2);
+            border-radius: 3px;
+        }
+
+        .zoom-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid rgba(201, 168, 76, .1);
+            padding-top: 12px;
+        }
+
+        .zoom-hint {
+            font-family: 'Space Mono', monospace;
+            font-size: .58rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .zoom-cta {
+            font-family: 'Space Mono', monospace;
+            font-size: .65rem;
+            padding: 8px 18px;
+            border: 1px solid var(--gold);
+            background: var(--gold-dim);
+            color: var(--gold);
+            border-radius: 3px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all .3s;
+        }
+
+        .zoom-cta:hover {
+            background: rgba(201, 168, 76, .18);
+            box-shadow: 0 0 16px rgba(201, 168, 76, .3);
+            color: var(--gold-light);
+        }
+
+        /* Close button */
+        .zoom-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, .6);
+            border: 1px solid rgba(201, 168, 76, .2);
+            color: var(--muted);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .3s;
+            z-index: 10;
+        }
+
+        .zoom-close-btn:hover {
+            border-color: var(--scarlet-b);
+            color: var(--scarlet-b);
+            box-shadow: 0 0 14px rgba(166, 28, 28, .3);
+        }
+
+        /* Hinge + base for zoom laptop */
+        .zoom-hinge {
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(180deg, #1a1510, #0d0b07);
+            border: 1px solid rgba(201, 168, 76, 0.18);
+            border-top: none;
+            border-bottom: none;
+        }
+
+        .zoom-base {
+            width: 100%;
+            background: linear-gradient(180deg, #1a1510, #0d0b07);
+            border-radius: 0 0 12px 12px;
+            border: 2px solid rgba(201, 168, 76, 0.18);
+            border-top: none;
+            padding: 12px 18px 10px;
+        }
+
+        .zoom-kb-row {
+            display: flex;
+            gap: 3px;
+            margin-bottom: 3px;
+            justify-content: center;
+        }
+
+        .zoom-key {
+            height: 8px;
+            border-radius: 2px;
+            background: #161209;
+            border: 1px solid rgba(201, 168, 76, 0.08);
+            border-bottom: 2px solid rgba(0, 0, 0, .6);
+            flex: 1;
+            max-width: 19px;
+        }
+
+        .zoom-key.w {
+            max-width: 34px;
+        }
+
+        .zoom-key.sp {
+            max-width: 130px;
+        }
+
+        .zoom-trackpad {
+            width: 80px;
+            height: 40px;
+            border-radius: 5px;
+            background: #0d0b06;
+            border: 1px solid rgba(201, 168, 76, .07);
+            margin: 6px auto 0;
+        }
+
         @media(max-width:900px) {
             .about-grid {
                 grid-template-columns: 1fr;
@@ -2295,37 +2624,75 @@
         if (laptopEl) laptopObs.observe(laptopEl);
 
         /* ════════════════════════════════
-           HONEYCOMB CANVAS
+           HONEYCOMB CANVAS — mouse-reactive glow restored
         ════════════════════════════════ */
         (function () {
             const cvs = document.getElementById('honeycomb-bg');
             const ctx = cvs.getContext('2d');
-            let W, H, hexes = []; const R = 28;
+            let W, H, hexes = [], hMouseX = innerWidth / 2, hMouseY = innerHeight / 2;
+            const R = 28, HOVER_R = 160;
+
+            // Track real mouse position for honeycomb (separate from LERP cursor)
+            window.addEventListener('mousemove', e => { hMouseX = e.clientX; hMouseY = e.clientY; });
+
             function resize() { W = cvs.width = innerWidth; H = cvs.height = innerHeight; build(); }
-            function pts(cx, cy, r) { const p = []; for (let i = 0; i < 6; i++) { const a = Math.PI / 180 * (60 * i - 30); p.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } return p; }
+            function hexPts(cx, cy, r) { const p = []; for (let i = 0; i < 6; i++) { const a = Math.PI / 180 * (60 * i - 30); p.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } return p; }
             function build() {
                 hexes = [];
                 const w = Math.sqrt(3) * R, h = R * 2;
                 const cols = Math.ceil(W / w) + 2, rows = Math.ceil(H / (h * .75)) + 2;
-                for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-                    hexes.push({ x: c * w + (r % 2 === 0 ? 0 : w / 2) - w, y: r * h * .75 - h, pulse: Math.random() * Math.PI * 2, speed: .003 + Math.random() * .003, scarlet: Math.random() < .04 });
+                for (let row = 0; row < rows; row++) for (let col = 0; col < cols; col++) {
+                    hexes.push({
+                        x: col * w + (row % 2 === 0 ? 0 : w / 2) - w,
+                        y: row * h * .75 - h,
+                        pulse: Math.random() * Math.PI * 2,
+                        speed: .003 + Math.random() * .003,
+                        scarlet: Math.random() < .04,
+                        hover: 0  // current hover intensity (lerped)
+                    });
                 }
             }
             function draw() {
                 ctx.clearRect(0, 0, W, H);
                 const sy = window.scrollY || 0;
+                const mxAdj = hMouseX, myAdj = hMouseY + sy; // world-space mouse y
+
                 hexes.forEach(h => {
                     h.pulse += h.speed;
+
+                    // Base wave animation
                     const wave = Math.sin(h.x * .002 + h.pulse) * Math.cos((h.y + sy * .25) * .002 + h.pulse);
-                    const a = .05 + ((wave + 1) / 2) * .1;
-                    const p = pts(h.x, h.y, R);
+                    const baseA = .04 + ((wave + 1) / 2) * .08;
+
+                    // Mouse proximity — use screen-space for live feel
+                    const dx = h.x - hMouseX, dy = h.y - (hMouseY + sy);
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const targetHover = dist < HOVER_R ? Math.pow(1 - dist / HOVER_R, 1.6) * 0.72 : 0;
+                    h.hover += (targetHover - h.hover) * 0.18; // smooth LERP
+
+                    const finalA = baseA + h.hover;
+                    if (finalA < 0.012) return; // skip invisible
+
+                    // Color shift: gold → bright gold as hover increases
+                    const rC = Math.round(201 + h.hover * 54);
+                    const gC = Math.round(168 + h.hover * 60);
+                    const bC = Math.max(0, Math.round(76 - h.hover * 76));
+
+                    const p = hexPts(h.x, h.y, R);
                     ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]);
                     for (let i = 1; i < 6; i++) ctx.lineTo(p[i][0], p[i][1]);
                     ctx.closePath();
-                    ctx.strokeStyle = h.scarlet ? `rgba(166,28,28,${a * 1.4})` : `rgba(201,168,76,${a})`;
-                    ctx.lineWidth = .8; ctx.stroke();
-                    ctx.fillStyle = h.scarlet ? `rgba(166,28,28,${a * .06})` : `rgba(201,168,76,${a * .04})`;
-                    ctx.fill();
+
+                    if (h.scarlet) {
+                        ctx.strokeStyle = `rgba(166,28,28,${Math.min(finalA * 1.5, .9)})`;
+                        ctx.fillStyle = `rgba(166,28,28,${h.hover * .1})`;
+                    } else {
+                        ctx.strokeStyle = `rgba(${rC},${gC},${bC},${Math.min(finalA, .85)})`;
+                        ctx.fillStyle = `rgba(${rC},${gC},${bC},${h.hover * .08})`;
+                    }
+                    ctx.lineWidth = h.hover > 0.05 ? 1.2 : 0.8;
+                    ctx.stroke();
+                    if (h.hover > 0.02) ctx.fill();
                 });
                 requestAnimationFrame(draw);
             }
@@ -2392,6 +2759,127 @@
         /* ── REVEAL OBSERVER ── */
         const revObs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); }); }, { threshold: .07, rootMargin: '0px 0px -40px 0px' });
         document.querySelectorAll('.reveal').forEach(el => revObs.observe(el));
+<!-- PROJECT ZOOM OVERLAY -->
+<div class="proj-zoom-overlay" id="projZoomOverlay">
+    <button class="zoom-close-btn" id="zoomCloseBtn" title="Close (Esc)">✕</button>
+    <div class="zoom-laptop-wrap">
+        <div class="zoom-bezel">
+            <div class="zoom-webcam"></div>
+            <div class="zoom-screen">
+                <div class="zoom-screen-inner">
+                    <div class="zoom-topbar">
+                        <div class="zoom-dots">
+                            <div class="zoom-dot r" id="zoomDotR"></div>
+                            <div class="zoom-dot y"></div>
+                            <div class="zoom-dot g"></div>
+                        </div>
+                        <div class="zoom-bar-title" id="zoomBarTitle">PROJECT.EXE</div>
+                        <a class="zoom-bar-link" id="zoomBarLink" href="#" target="_blank">↗ OPEN</a>
+                    </div>
+                    <div class="zoom-content">
+                        <span class="zoom-badge" id="zoomBadge"></span>
+                        <div class="zoom-title" id="zoomTitle"></div>
+                        <p class="zoom-desc" id="zoomDesc"></p>
+                        <div class="zoom-tags" id="zoomTags"></div>
+                        <div class="zoom-footer">
+                            <span class="zoom-hint">Press ESC or click ✕ to close</span>
+                            <a class="zoom-cta" id="zoomCta" href="#" target="_blank">↗ View Project</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="zoom-hinge"></div>
+        <div class="zoom-base">
+            <div class="zoom-kb-row"><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key w"></div></div>
+            <div class="zoom-kb-row"><div class="zoom-key w"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div></div>
+            <div class="zoom-kb-row"><div class="zoom-key sp"></div><div class="zoom-key w"></div><div class="zoom-key w"></div></div>
+            <div class="zoom-trackpad"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ════════════════════════════════
+   PROJECT ZOOM — click s-card → zoom into laptop with project detail
+════════════════════════════════ */
+const projData = {
+    sc1: {
+        badge: '🏆 1st Place · Product@TAMU Ideathon Spring 2026',
+        title: 'Aegis',
+        titleGold: '',
+        desc: 'Wearable biometric patch for continuous clinical-grade fetal and maternal monitoring. Engineered a FastICA signal processing pipeline to isolate fetal ECG from a maternal waveform 10× stronger, with adaptive notch filtering for real-time artifact removal. Built a React clinical dashboard with live WebSocket feeds tracking 5 simultaneous biometrics: fetal heart rate, maternal heart rate, SpO2, uterine EMG, and contraction frequency. Designed a risk-stratified patient triage UI optimized for clinical readability under high-stakes conditions.',
+        tags: ['React','WebSocket','Chart.js','FastICA','Signal Processing','Figma'],
+        link: 'https://devpost.com/software/aegis-7ykinj',
+        barTitle: 'AEGIS.EXE'
+    },
+    sc2: {
+        badge: 'Full-Stack · Active',
+        title: 'SupplyWatch',
+        titleGold: '',
+        desc: 'Full-stack AI route intelligence platform for maritime logistics across a global port/shipping network built with 15+ technologies across a 4-person team. Deployed a PostgreSQL/PostGIS schema and automated RSS news ingestion pipeline linking global events to route risk scores with explainable risk deltas. Integrated Gemini API for AI-assisted safer-route recommendations and built an interactive Three.js globe UI with real-time alerts, filtering, and trend sparklines.',
+        tags: ['React/TS','Node.js','PostgreSQL','PostGIS','Supabase','Gemini API','Three.js'],
+        link: 'https://github.com/likithkancharlapalli/B4G',
+        barTitle: 'SUPPLYWATCH.EXE'
+    },
+    sc3: {
+        badge: 'Quant · Active',
+        title: 'AI Sentiment Trading',
+        titleGold: 'Model',
+        desc: 'FinBERT-powered NLP pipeline extracting financial sentiment from LSEG news across TSLA, AAPL, and AMZN to generate daily directional trading signals. Engineered features including pos/neg/neutral ratios, confidence scores, and article volume per trading day as inputs to 4 classifiers. Implemented a walk-forward backtesting framework with 6-month rolling training windows and 1-month test periods to evaluate out-of-sample predictive robustness. Automated end-to-end ingestion, sentiment scoring, signal merging, and evaluation pipelines.',
+        tags: ['Python','FinBERT','LightGBM','Gradient Boosting','Random Forest','LSEG','Pandas','NumPy','NLP'],
+        link: 'https://github.com/saialluri2195/AI-Driven-Sentiment-Analysis-Trading-Model',
+        barTitle: 'AI_TRADING.EXE'
+    }
+};
+
+const overlay = document.getElementById('projZoomOverlay');
+const closeBtn = document.getElementById('zoomCloseBtn');
+
+function openZoom(id) {
+    const d = projData[id];
+    if (!d) return;
+    document.getElementById('zoomBadge').textContent = d.badge;
+    document.getElementById('zoomTitle').innerHTML = d.titleGold
+        ? `${d.title} <span class="zt-gold">${d.titleGold}</span>`
+        : d.title;
+    document.getElementById('zoomDesc').textContent = d.desc;
+    document.getElementById('zoomBarTitle').textContent = d.barTitle;
+    document.getElementById('zoomBarLink').href = d.link;
+    document.getElementById('zoomCta').href = d.link;
+    const tagsEl = document.getElementById('zoomTags');
+    tagsEl.innerHTML = d.tags.map(t=>`<span class="zoom-tag">${t}</span>`).join('');
+    // red dot = "close" — clicking it closes overlay
+    document.getElementById('zoomDotR').onclick = closeZoom;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeZoom() {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+closeBtn.addEventListener('click', closeZoom);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeZoom(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeZoom(); });
+
+// Wire up each s-card inside the laptop
+['sc1','sc2','sc3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => openZoom(id));
+});
+
+// Also wire up the full project cards below the laptop
+const fullCardMap = [
+    { idx: 0, id: 'sc1' },
+    { idx: 1, id: 'sc2' },
+    { idx: 2, id: 'sc3' }
+];
+document.querySelectorAll('.proj-grid .tilt-card').forEach((card, i) => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => openZoom(fullCardMap[i]?.id));
+});
     </script>
 </body>
 
