@@ -2492,7 +2492,7 @@
         window.addEventListener('mouseup', () => { cring.style.width = magnetic ? '50px' : '32px'; cring.style.height = magnetic ? '50px' : '32px'; });
         (function lerpCursor() {
             if (!magnetic) { tx = mx; ty = my; }
-            rx += (tx - rx) * (magnetic ? .2 : .12); ry += (ty - ry) * (magnetic ? .2 : .12);
+            rx += (tx - rx) * (magnetic ? 0.2 : 0.12); ry += (ty - ry) * (magnetic ? 0.2 : 0.12);
             cring.style.transform = `translate3d(${rx}px,${ry}px,0) translate(-50%,-50%)`;
             requestAnimationFrame(lerpCursor);
         })();
@@ -2759,127 +2759,158 @@
         /* ── REVEAL OBSERVER ── */
         const revObs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); }); }, { threshold: .07, rootMargin: '0px 0px -40px 0px' });
         document.querySelectorAll('.reveal').forEach(el => revObs.observe(el));
-<!-- PROJECT ZOOM OVERLAY -->
-<div class="proj-zoom-overlay" id="projZoomOverlay">
-    <button class="zoom-close-btn" id="zoomCloseBtn" title="Close (Esc)">✕</button>
-    <div class="zoom-laptop-wrap">
-        <div class="zoom-bezel">
-            <div class="zoom-webcam"></div>
-            <div class="zoom-screen">
-                <div class="zoom-screen-inner">
-                    <div class="zoom-topbar">
-                        <div class="zoom-dots">
-                            <div class="zoom-dot r" id="zoomDotR"></div>
-                            <div class="zoom-dot y"></div>
-                            <div class="zoom-dot g"></div>
+    </script>
+
+    <!-- PROJECT ZOOM OVERLAY -->
+    <div class="proj-zoom-overlay" id="projZoomOverlay">
+        <button class="zoom-close-btn" id="zoomCloseBtn" title="Close (Esc)">✕</button>
+        <div class="zoom-laptop-wrap">
+            <div class="zoom-bezel">
+                <div class="zoom-webcam"></div>
+                <div class="zoom-screen">
+                    <div class="zoom-screen-inner">
+                        <div class="zoom-topbar">
+                            <div class="zoom-dots">
+                                <div class="zoom-dot r" id="zoomDotR"></div>
+                                <div class="zoom-dot y"></div>
+                                <div class="zoom-dot g"></div>
+                            </div>
+                            <div class="zoom-bar-title" id="zoomBarTitle">PROJECT.EXE</div>
+                            <a class="zoom-bar-link" id="zoomBarLink" href="#" target="_blank">↗ OPEN</a>
                         </div>
-                        <div class="zoom-bar-title" id="zoomBarTitle">PROJECT.EXE</div>
-                        <a class="zoom-bar-link" id="zoomBarLink" href="#" target="_blank">↗ OPEN</a>
-                    </div>
-                    <div class="zoom-content">
-                        <span class="zoom-badge" id="zoomBadge"></span>
-                        <div class="zoom-title" id="zoomTitle"></div>
-                        <p class="zoom-desc" id="zoomDesc"></p>
-                        <div class="zoom-tags" id="zoomTags"></div>
-                        <div class="zoom-footer">
-                            <span class="zoom-hint">Press ESC or click ✕ to close</span>
-                            <a class="zoom-cta" id="zoomCta" href="#" target="_blank">↗ View Project</a>
+                        <div class="zoom-content">
+                            <span class="zoom-badge" id="zoomBadge"></span>
+                            <div class="zoom-title" id="zoomTitle"></div>
+                            <p class="zoom-desc" id="zoomDesc"></p>
+                            <div class="zoom-tags" id="zoomTags"></div>
+                            <div class="zoom-footer">
+                                <span class="zoom-hint">Press ESC or click ✕ to close</span>
+                                <a class="zoom-cta" id="zoomCta" href="#" target="_blank">↗ View Project</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="zoom-hinge"></div>
-        <div class="zoom-base">
-            <div class="zoom-kb-row"><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key w"></div></div>
-            <div class="zoom-kb-row"><div class="zoom-key w"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div><div class="zoom-key"></div></div>
-            <div class="zoom-kb-row"><div class="zoom-key sp"></div><div class="zoom-key w"></div><div class="zoom-key w"></div></div>
-            <div class="zoom-trackpad"></div>
+            <div class="zoom-hinge"></div>
+            <div class="zoom-base">
+                <div class="zoom-kb-row">
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key w"></div>
+                </div>
+                <div class="zoom-kb-row">
+                    <div class="zoom-key w"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                    <div class="zoom-key"></div>
+                </div>
+                <div class="zoom-kb-row">
+                    <div class="zoom-key sp"></div>
+                    <div class="zoom-key w"></div>
+                    <div class="zoom-key w"></div>
+                </div>
+                <div class="zoom-trackpad"></div>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-/* ════════════════════════════════
-   PROJECT ZOOM — click s-card → zoom into laptop with project detail
-════════════════════════════════ */
-const projData = {
-    sc1: {
-        badge: '🏆 1st Place · Product@TAMU Ideathon Spring 2026',
-        title: 'Aegis',
-        titleGold: '',
-        desc: 'Wearable biometric patch for continuous clinical-grade fetal and maternal monitoring. Engineered a FastICA signal processing pipeline to isolate fetal ECG from a maternal waveform 10× stronger, with adaptive notch filtering for real-time artifact removal. Built a React clinical dashboard with live WebSocket feeds tracking 5 simultaneous biometrics: fetal heart rate, maternal heart rate, SpO2, uterine EMG, and contraction frequency. Designed a risk-stratified patient triage UI optimized for clinical readability under high-stakes conditions.',
-        tags: ['React','WebSocket','Chart.js','FastICA','Signal Processing','Figma'],
-        link: 'https://devpost.com/software/aegis-7ykinj',
-        barTitle: 'AEGIS.EXE'
-    },
-    sc2: {
-        badge: 'Full-Stack · Active',
-        title: 'SupplyWatch',
-        titleGold: '',
-        desc: 'Full-stack AI route intelligence platform for maritime logistics across a global port/shipping network built with 15+ technologies across a 4-person team. Deployed a PostgreSQL/PostGIS schema and automated RSS news ingestion pipeline linking global events to route risk scores with explainable risk deltas. Integrated Gemini API for AI-assisted safer-route recommendations and built an interactive Three.js globe UI with real-time alerts, filtering, and trend sparklines.',
-        tags: ['React/TS','Node.js','PostgreSQL','PostGIS','Supabase','Gemini API','Three.js'],
-        link: 'https://github.com/likithkancharlapalli/B4G',
-        barTitle: 'SUPPLYWATCH.EXE'
-    },
-    sc3: {
-        badge: 'Quant · Active',
-        title: 'AI Sentiment Trading',
-        titleGold: 'Model',
-        desc: 'FinBERT-powered NLP pipeline extracting financial sentiment from LSEG news across TSLA, AAPL, and AMZN to generate daily directional trading signals. Engineered features including pos/neg/neutral ratios, confidence scores, and article volume per trading day as inputs to 4 classifiers. Implemented a walk-forward backtesting framework with 6-month rolling training windows and 1-month test periods to evaluate out-of-sample predictive robustness. Automated end-to-end ingestion, sentiment scoring, signal merging, and evaluation pipelines.',
-        tags: ['Python','FinBERT','LightGBM','Gradient Boosting','Random Forest','LSEG','Pandas','NumPy','NLP'],
-        link: 'https://github.com/saialluri2195/AI-Driven-Sentiment-Analysis-Trading-Model',
-        barTitle: 'AI_TRADING.EXE'
-    }
-};
+    <script>
+        /* ════════════════════════════════
+           PROJECT ZOOM — click s-card → zoom into laptop with project detail
+        ════════════════════════════════ */
+        const projData = {
+            sc1: {
+                badge: '🏆 1st Place · Product@TAMU Ideathon Spring 2026',
+                title: 'Aegis',
+                titleGold: '',
+                desc: 'Wearable biometric patch for continuous clinical-grade fetal and maternal monitoring. Engineered a FastICA signal processing pipeline to isolate fetal ECG from a maternal waveform 10× stronger, with adaptive notch filtering for real-time artifact removal. Built a React clinical dashboard with live WebSocket feeds tracking 5 simultaneous biometrics: fetal heart rate, maternal heart rate, SpO2, uterine EMG, and contraction frequency. Designed a risk-stratified patient triage UI optimized for clinical readability under high-stakes conditions.',
+                tags: ['React', 'WebSocket', 'Chart.js', 'FastICA', 'Signal Processing', 'Figma'],
+                link: 'https://devpost.com/software/aegis-7ykinj',
+                barTitle: 'AEGIS.EXE'
+            },
+            sc2: {
+                badge: 'Full-Stack · Active',
+                title: 'SupplyWatch',
+                titleGold: '',
+                desc: 'Full-stack AI route intelligence platform for maritime logistics across a global port/shipping network built with 15+ technologies across a 4-person team. Deployed a PostgreSQL/PostGIS schema and automated RSS news ingestion pipeline linking global events to route risk scores with explainable risk deltas. Integrated Gemini API for AI-assisted safer-route recommendations and built an interactive Three.js globe UI with real-time alerts, filtering, and trend sparklines.',
+                tags: ['React/TS', 'Node.js', 'PostgreSQL', 'PostGIS', 'Supabase', 'Gemini API', 'Three.js'],
+                link: 'https://github.com/likithkancharlapalli/B4G',
+                barTitle: 'SUPPLYWATCH.EXE'
+            },
+            sc3: {
+                badge: 'Quant · Active',
+                title: 'AI Sentiment Trading',
+                titleGold: 'Model',
+                desc: 'FinBERT-powered NLP pipeline extracting financial sentiment from LSEG news across TSLA, AAPL, and AMZN to generate daily directional trading signals. Engineered features including pos/neg/neutral ratios, confidence scores, and article volume per trading day as inputs to 4 classifiers. Implemented a walk-forward backtesting framework with 6-month rolling training windows and 1-month test periods to evaluate out-of-sample predictive robustness. Automated end-to-end ingestion, sentiment scoring, signal merging, and evaluation pipelines.',
+                tags: ['Python', 'FinBERT', 'LightGBM', 'Gradient Boosting', 'Random Forest', 'LSEG', 'Pandas', 'NumPy', 'NLP'],
+                link: 'https://github.com/saialluri2195/AI-Driven-Sentiment-Analysis-Trading-Model',
+                barTitle: 'AI_TRADING.EXE'
+            }
+        };
 
-const overlay = document.getElementById('projZoomOverlay');
-const closeBtn = document.getElementById('zoomCloseBtn');
+        const overlay = document.getElementById('projZoomOverlay');
+        const closeBtn = document.getElementById('zoomCloseBtn');
 
-function openZoom(id) {
-    const d = projData[id];
-    if (!d) return;
-    document.getElementById('zoomBadge').textContent = d.badge;
-    document.getElementById('zoomTitle').innerHTML = d.titleGold
-        ? `${d.title} <span class="zt-gold">${d.titleGold}</span>`
-        : d.title;
-    document.getElementById('zoomDesc').textContent = d.desc;
-    document.getElementById('zoomBarTitle').textContent = d.barTitle;
-    document.getElementById('zoomBarLink').href = d.link;
-    document.getElementById('zoomCta').href = d.link;
-    const tagsEl = document.getElementById('zoomTags');
-    tagsEl.innerHTML = d.tags.map(t=>`<span class="zoom-tag">${t}</span>`).join('');
-    // red dot = "close" — clicking it closes overlay
-    document.getElementById('zoomDotR').onclick = closeZoom;
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
+        function openZoom(id) {
+            const d = projData[id];
+            if (!d) return;
+            document.getElementById('zoomBadge').textContent = d.badge;
+            document.getElementById('zoomTitle').innerHTML = d.titleGold
+                ? `${d.title} <span class="zt-gold">${d.titleGold}</span>`
+                : d.title;
+            document.getElementById('zoomDesc').textContent = d.desc;
+            document.getElementById('zoomBarTitle').textContent = d.barTitle;
+            document.getElementById('zoomBarLink').href = d.link;
+            document.getElementById('zoomCta').href = d.link;
+            const tagsEl = document.getElementById('zoomTags');
+            tagsEl.innerHTML = d.tags.map(t => `<span class="zoom-tag">${t}</span>`).join('');
+            // red dot = "close" — clicking it closes overlay
+            document.getElementById('zoomDotR').onclick = closeZoom;
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
 
-function closeZoom() {
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-}
+        function closeZoom() {
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
 
-closeBtn.addEventListener('click', closeZoom);
-overlay.addEventListener('click', e => { if (e.target === overlay) closeZoom(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeZoom(); });
+        closeBtn.addEventListener('click', closeZoom);
+        overlay.addEventListener('click', e => { if (e.target === overlay) closeZoom(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeZoom(); });
 
-// Wire up each s-card inside the laptop
-['sc1','sc2','sc3'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('click', () => openZoom(id));
-});
+        // Wire up each s-card inside the laptop
+        ['sc1', 'sc2', 'sc3'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', () => openZoom(id));
+        });
 
-// Also wire up the full project cards below the laptop
-const fullCardMap = [
-    { idx: 0, id: 'sc1' },
-    { idx: 1, id: 'sc2' },
-    { idx: 2, id: 'sc3' }
-];
-document.querySelectorAll('.proj-grid .tilt-card').forEach((card, i) => {
-    card.style.cursor = 'pointer';
-    card.addEventListener('click', () => openZoom(fullCardMap[i]?.id));
-});
+        // Also wire up the full project cards below the laptop
+        const fullCardMap = [
+            { idx: 0, id: 'sc1' },
+            { idx: 1, id: 'sc2' },
+            { idx: 2, id: 'sc3' }
+        ];
+        document.querySelectorAll('.proj-grid .tilt-card').forEach((card, i) => {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', () => { var m = fullCardMap[i]; if (m) openZoom(m.id); });
+        });
     </script>
 </body>
 
