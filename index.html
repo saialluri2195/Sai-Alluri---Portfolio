@@ -10,7 +10,20 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
+
+    <!-- Feather Icons -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+
+    <!-- GSAP & Animations CDNs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <!-- Lenis Smooth Scroll CDN -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
+
+    <!-- SplitType Text Splitter CDN -->
+    <script src="https://unpkg.com/split-type"></script>
+
     <style>
         :root {
             --bg-base: #080601;
@@ -40,7 +53,9 @@
         }
 
         html {
-            scroll-behavior: smooth;
+            /* Lenis recommends letting the library handle smooth scrolling */
+            scroll-behavior: auto;
+            background-color: var(--bg-base);
         }
 
         body {
@@ -110,6 +125,18 @@
             pointer-events: none;
             z-index: 998;
             opacity: 0.08;
+        }
+
+        /* ── WEBGL LIQUID BACKGROUND ── */
+        #webgl-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.45;
         }
 
         /* ── HONEYCOMB ── */
@@ -706,6 +733,12 @@
             color: var(--scarlet-b);
             font-family: var(--font-mono);
             font-size: .9rem;
+        }
+
+        /* Split-Type letters positioning compatibility */
+        .char {
+            display: inline-block;
+            transform-origin: bottom center;
         }
 
         /* ── REVEAL ── */
@@ -2179,6 +2212,16 @@
             margin: 6px auto 0;
         }
 
+        /* Page-wipe clip-path transitions overlay */
+        .wipe-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--scarlet) 100%);
+            clip-path: circle(0% at 50% 50%);
+            pointer-events: none;
+        }
+
         @media(max-width:900px) {
             .about-grid {
                 grid-template-columns: 1fr;
@@ -2246,6 +2289,7 @@
 
 <body>
 
+    <canvas id="webgl-bg"></canvas>
     <canvas id="honeycomb-bg"></canvas>
     <div class="cursor-dot" id="cdot"></div>
     <div class="cursor-ring" id="cring"></div>
@@ -3017,6 +3061,64 @@
             document.getElementById('uptime-val').textContent = elapsed + 's';
         }, 100);
 
+        /* ── LENIS SMOOTH SCROLL INERTIA ── */
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // smooth easeOut
+            direction: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        /* ── CLIP-PATH CIRCULAR TRANSITION WIPE ON NAV CLICK ── */
+        const wipeOverlay = document.createElement('div');
+        wipeOverlay.className = 'wipe-overlay';
+        document.body.appendChild(wipeOverlay);
+
+        document.querySelectorAll('.nav-links a, .logo, .btn').forEach(link => {
+            link.addEventListener('click', e => {
+                const href = link.getAttribute('href');
+                if (!href || !href.startsWith('#')) return;
+
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (!target && href !== '#') return;
+
+                const x = e.clientX || window.innerWidth / 2;
+                const y = e.clientY || window.innerHeight / 2;
+
+                wipeOverlay.style.transition = 'none';
+                wipeOverlay.style.clipPath = `circle(0% at ${x}px ${y}px)`;
+
+                // Force reflow
+                wipeOverlay.offsetWidth;
+
+                wipeOverlay.style.transition = 'clip-path 0.85s cubic-bezier(0.76, 0, 0.24, 1)';
+                wipeOverlay.style.clipPath = `circle(150% at ${x}px ${y}px)`;
+
+                playChime();
+
+                setTimeout(() => {
+                    if (href === '#') {
+                        lenis.scrollTo(0);
+                    } else {
+                        lenis.scrollTo(target);
+                    }
+                }, 400);
+
+                setTimeout(() => {
+                    wipeOverlay.style.clipPath = `circle(0% at ${x}px ${y}px)`;
+                }, 850);
+            });
+        });
+
         /* ── CURSOR (LERP + MAGNETIC + SOUNDS) ── */
         let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, tx = mx, ty = my, magnetic = false;
         const cdot = document.getElementById('cdot'), cring = document.getElementById('cring');
@@ -3441,73 +3543,195 @@
         })();
 
         /* ════════════════════════════════
-           VAULT DOORS (scroll-driven LERP with mechanical dials & status LEDs)
+           WEBGL LIQUID FLUID SHADER
         ════════════════════════════════ */
         (function () {
-            const sections = document.querySelectorAll('.vault-section');
-            const states = Array.from(sections).map(s => ({
-                section: s,
-                top: s.querySelector('.vault-panel-top'),
-                bot: s.querySelector('.vault-panel-bottom'),
-                dials: s.querySelectorAll('.vault-dial-wrapper'),
-                leds: s.querySelectorAll('.vault-status-led'),
-                cur: 0, tgt: 0, unlocked: false
-            }));
+            const canvas = document.getElementById('webgl-bg');
+            if (!canvas) return;
+            const gl = canvas.getContext('webgl');
+            if (!gl) return;
 
-            states.forEach(st => {
-                if (st.top) st.top.style.transition = 'none';
-                if (st.bot) st.bot.style.transition = 'none';
-                st.dials.forEach(dw => dw.style.transition = 'none');
+            let width, height;
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                gl.viewport(0, 0, width, height);
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const vsSource = `
+                attribute vec2 position;
+                void main() {
+                    gl_Position = vec4(position, 0.0, 1.0);
+                }
+            `;
+
+            const fsSource = `
+                precision mediump float;
+                uniform vec2 u_resolution;
+                uniform float u_time;
+                uniform vec2 u_mouse;
+                
+                void main() {
+                    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+                    float t = u_time * 0.25;
+                    
+                    // Complex fluid waves coordinates distortion
+                    vec2 p = uv * 2.5 - vec2(1.25);
+                    p.x += sin(p.y + t) * 0.4;
+                    p.y += cos(p.x + t) * 0.4;
+                    
+                    float w1 = sin(p.x + t) + cos(p.y - t);
+                    float w2 = sin(length(p) - t * 1.2);
+                    float wave = (w1 + w2) * 0.5;
+                    
+                    // Primary accents mapping: gold (#c9a84c) & scarlet (#d42b2b)
+                    vec3 gold = vec3(0.788, 0.658, 0.298);
+                    vec3 scarlet = vec3(0.831, 0.169, 0.169);
+                    vec3 darkBg = vec3(0.03, 0.024, 0.008);
+                    
+                    float mDist = length(uv - u_mouse);
+                    float glow = exp(-mDist * 4.0) * 0.22;
+                    
+                    vec3 col = mix(darkBg, gold, max(0.0, wave * 0.18 + 0.08));
+                    col = mix(col, scarlet, max(0.0, -wave * 0.15 + 0.04));
+                    col += gold * glow;
+                    
+                    gl_FragColor = vec4(col, 0.15); // Translucent blending overlay
+                }
+            `;
+
+            function createShader(gl, type, source) {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error(gl.getShaderInfoLog(shader));
+                    gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            }
+
+            const vs = createShader(gl, gl.VERTEX_SHADER, vsSource);
+            const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+
+            const program = gl.createProgram();
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
+            gl.linkProgram(program);
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error(gl.getProgramInfoLog(program));
+                return;
+            }
+            gl.useProgram(program);
+
+            const buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                -1, -1, 1, -1, -1, 1,
+                -1, 1, 1, -1, 1, 1,
+            ]), gl.STATIC_DRAW);
+
+            const posLoc = gl.getAttribLocation(program, "position");
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            const resLoc = gl.getUniformLocation(program, "u_resolution");
+            const timeLoc = gl.getUniformLocation(program, "u_time");
+            const mouseLoc = gl.getUniformLocation(program, "u_mouse");
+
+            let mouseNormX = 0.5, mouseNormY = 0.5;
+            window.addEventListener('mousemove', e => {
+                mouseNormX = e.clientX / window.innerWidth;
+                mouseNormY = 1.0 - (e.clientY / window.innerHeight);
             });
 
-            function tick() {
-                const wh = innerHeight, sy = window.scrollY;
-                states.forEach(st => {
-                    const rect = st.section.getBoundingClientRect();
-                    const top = rect.top + sy;
-
-                    // opens over 320px scroll window starting when section header approaches bottom
-                    const p = Math.max(0, Math.min(1, (sy - (top - wh + 80)) / (320)));
-                    st.tgt = p;
-                    st.cur += (st.tgt - st.cur) * .1; // LERP calculation
-
-                    if (st.cur < .001) st.cur = 0;
-                    if (st.cur > .999) st.cur = 1;
-
-                    if (st.top) st.top.style.transform = `translate3d(0,${-st.cur * 101}%,0)`;
-                    if (st.bot) st.bot.style.transform = `translate3d(0,${st.cur * 101}%,0)`;
-
-                    // Rotating dials
-                    st.dials.forEach(dialWrapper => {
-                        const dial = dialWrapper.querySelector('.vault-dial');
-                        const dialSpin = st.cur * 270;
-
-                        dialWrapper.style.transform = `translate3d(-50%, 0, 0) scale(${1 - st.cur * 0.4})`;
-                        dialWrapper.style.opacity = `${1 - st.cur}`;
-                        if (dial) {
-                            dial.style.transform = `rotate(${dialSpin}deg)`;
-                        }
-                    });
-
-                    // Lock indicator transition
-                    if (st.cur >= 0.85 && !st.unlocked) {
-                        st.unlocked = true;
-                        st.leds.forEach(led => {
-                            led.style.background = '#00ff66';
-                            led.style.boxShadow = '0 0 12px #00ff66';
-                        });
-                    } else if (st.cur < 0.85 && st.unlocked) {
-                        st.unlocked = false;
-                        st.leds.forEach(led => {
-                            led.style.background = 'var(--scarlet)';
-                            led.style.boxShadow = '0 0 10px var(--scarlet)';
-                        });
-                    }
-                });
-                requestAnimationFrame(tick);
+            function render(now) {
+                gl.uniform2f(resLoc, width, height);
+                gl.uniform1f(timeLoc, now * 0.001);
+                gl.uniform2f(mouseLoc, mouseNormX, mouseNormY);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+                requestAnimationFrame(render);
             }
-            tick();
+            requestAnimationFrame(render);
         })();
+
+        /* ════════════════════════════════
+           GSAP SCROLLTRIGGER VAULT DOORS
+        ════════════════════════════════ */
+        gsap.registerPlugin(ScrollTrigger);
+
+        document.querySelectorAll('.vault-section').forEach(section => {
+            const topPanel = section.querySelector('.vault-panel-top');
+            const bottomPanel = section.querySelector('.vault-panel-bottom');
+            const dials = section.querySelectorAll('.vault-dial-wrapper');
+            const leds = section.querySelectorAll('.vault-status-led');
+
+            if (topPanel) topPanel.style.transition = 'none';
+            if (bottomPanel) bottomPanel.style.transition = 'none';
+            dials.forEach(d => d.style.transition = 'none');
+
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top bottom-=80px",
+                    end: "top center-=100px",
+                    scrub: 1.2,
+                }
+            });
+
+            if (topPanel) {
+                tl.to(topPanel, { yPercent: -101, ease: "power2.out" }, 0);
+            }
+            if (bottomPanel) {
+                tl.to(bottomPanel, { yPercent: 101, ease: "power2.out" }, 0);
+            }
+
+            dials.forEach(dialWrapper => {
+                const dial = dialWrapper.querySelector('.vault-dial');
+                tl.to(dialWrapper, { scale: 0.6, opacity: 0, ease: "power2.out" }, 0);
+                if (dial) {
+                    tl.to(dial, { rotation: 270, ease: "power2.out" }, 0);
+                }
+            });
+
+            tl.to({}, {
+                duration: 0.1,
+                onStart: () => {
+                    leds.forEach(led => {
+                        led.style.background = '#00ff66';
+                        led.style.boxShadow = '0 0 12px #00ff66';
+                    });
+                },
+                onReverseComplete: () => {
+                    leds.forEach(led => {
+                        led.style.background = 'var(--scarlet)';
+                        led.style.boxShadow = '0 0 10px var(--scarlet)';
+                    });
+                }
+            }, 0.85);
+        });
+
+        /* ── GSAP + SPLITTYPE TITLE REVEALS ── */
+        const splitTitles = new SplitType('.section-title', { types: 'chars, words' });
+        document.querySelectorAll('.section-title').forEach(title => {
+            const chars = title.querySelectorAll('.char');
+            gsap.from(chars, {
+                scrollTrigger: {
+                    trigger: title,
+                    start: "top bottom-=50px",
+                    end: "top center+=100px",
+                    scrub: 0.8,
+                },
+                opacity: 0,
+                y: 15,
+                rotationX: -60,
+                stagger: 0.04,
+                ease: "power2.out"
+            });
+        });
 
         /* ── REVEAL OBSERVER ── */
         const revObs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); }); }, { threshold: .07, rootMargin: '0px 0px -40px 0px' });
@@ -3634,7 +3858,7 @@
             document.getElementById('zoomCta').href = d.link;
             const tagsEl = document.getElementById('zoomTags');
             tagsEl.innerHTML = d.tags.map(t => `<span class="zoom-tag">${t}</span>`).join('');
-            // red dot = "close" — clicking it closes overlay
+
             document.getElementById('zoomDotR').onclick = closeZoom;
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
