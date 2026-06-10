@@ -2291,9 +2291,10 @@
 
     <canvas id="webgl-bg"></canvas>
     <canvas id="honeycomb-bg"></canvas>
-    
+
     <!-- SCROLL SNAKE PATH -->
-    <svg id="scroll-snake-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+    <svg id="scroll-snake-svg"
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
         <defs>
             <linearGradient id="snake-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stop-color="var(--gold)" />
@@ -2308,7 +2309,8 @@
                 </feMerge>
             </filter>
         </defs>
-        <path id="scroll-snake-path" d="" fill="none" stroke="url(#snake-gradient)" stroke-width="3.5" filter="url(#snake-glow)" stroke-linecap="round" stroke-linejoin="round" opacity="0.8" />
+        <path id="scroll-snake-path" d="" fill="none" stroke="url(#snake-gradient)" stroke-width="3.5"
+            filter="url(#snake-glow)" stroke-linecap="round" stroke-linejoin="round" opacity="0.8" />
     </svg>
 
     <div class="cursor-dot" id="cdot"></div>
@@ -2390,7 +2392,8 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">01.</span> <span class="title-text">About Me</span></h2>
+            <h2 class="section-title reveal"><span class="s-num">01.</span> <span class="title-text">About Me</span>
+            </h2>
             <div class="about-grid">
                 <div class="profile-wrap reveal">
                     <div class="profile-ring"></div>
@@ -2510,7 +2513,8 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">02.</span> <span class="title-text">Experience</span></h2>
+            <h2 class="section-title reveal"><span class="s-num">02.</span> <span class="title-text">Experience</span>
+            </h2>
             <div class="timeline">
                 <div class="tl-item reveal">
                     <div class="card tilt-card">
@@ -2568,7 +2572,8 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">03.</span> <span class="title-text">Featured Projects</span></h2>
+            <h2 class="section-title reveal"><span class="s-num">03.</span> <span class="title-text">Featured
+                    Projects</span></h2>
 
             <!-- LAPTOP BOOT -->
             <div class="laptop-scene reveal" id="laptopScene">
@@ -2776,7 +2781,8 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">04.</span> <span class="title-text">Technical Arsenal</span></h2>
+            <h2 class="section-title reveal"><span class="s-num">04.</span> <span class="title-text">Technical
+                    Arsenal</span></h2>
             <div class="skills-wrap">
                 <div class="reveal">
                     <div class="skill-cat-head">
@@ -2858,7 +2864,8 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">05.</span> <span class="title-text">Credentials</span></h2>
+            <h2 class="section-title reveal"><span class="s-num">05.</span> <span class="title-text">Credentials</span>
+            </h2>
             <p class="sub-head reveal">// Certifications</p>
             <div class="certs-grid">
                 <div class="card cert-card reveal tilt-card">
@@ -2951,7 +2958,8 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">06.</span> <span class="title-text">Establish Connection</span></h2>
+            <h2 class="section-title reveal"><span class="s-num">06.</span> <span class="title-text">Establish
+                    Connection</span></h2>
             <div class="contact-wrap">
                 <p class="contact-intro reveal">Open to opportunities in Cybersecurity, MIS, Product Management, and
                     Quantitative Development. Reach out through any channel below.</p>
@@ -3177,7 +3185,7 @@
                     snakePath.style.strokeDashoffset = pathLength * (1 - progress);
                     try {
                         window.activeSnakeTip = snakePath.getPointAtLength(pathLength * progress);
-                    } catch (e) {}
+                    } catch (e) { }
                 }
             });
         }
@@ -3844,7 +3852,7 @@
         document.querySelectorAll('.section-title').forEach(title => {
             const num = title.querySelector('.s-num');
             const chars = title.querySelectorAll('.title-text .char');
-            
+
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: title,
