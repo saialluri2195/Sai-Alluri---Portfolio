@@ -2291,6 +2291,26 @@
 
     <canvas id="webgl-bg"></canvas>
     <canvas id="honeycomb-bg"></canvas>
+    
+    <!-- SCROLL SNAKE PATH -->
+    <svg id="scroll-snake-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+        <defs>
+            <linearGradient id="snake-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="var(--gold)" />
+                <stop offset="50%" stop-color="var(--scarlet-b)" />
+                <stop offset="100%" stop-color="var(--gold)" />
+            </linearGradient>
+            <filter id="snake-glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="8" result="blur" />
+                <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                </feMerge>
+            </filter>
+        </defs>
+        <path id="scroll-snake-path" d="" fill="none" stroke="url(#snake-gradient)" stroke-width="3.5" filter="url(#snake-glow)" stroke-linecap="round" stroke-linejoin="round" opacity="0.8" />
+    </svg>
+
     <div class="cursor-dot" id="cdot"></div>
     <div class="cursor-ring" id="cring"></div>
 
@@ -2310,10 +2330,6 @@
 
             <!-- Technical Dashboard Decals in Navbar -->
             <div class="nav-decals">
-                <div class="nav-uptime">
-                    <span class="dot-online"></span>
-                    SYS_UP: <span id="uptime-val">0.0s</span>
-                </div>
                 <button class="nav-audio-btn" id="audioToggle" title="Toggle System Sounds">
                     <i data-feather="volume-x"></i>
                 </button>
@@ -2374,7 +2390,7 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">01.</span> About Me</h2>
+            <h2 class="section-title reveal"><span class="s-num">01.</span> <span class="title-text">About Me</span></h2>
             <div class="about-grid">
                 <div class="profile-wrap reveal">
                     <div class="profile-ring"></div>
@@ -2494,7 +2510,7 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">02.</span> Experience</h2>
+            <h2 class="section-title reveal"><span class="s-num">02.</span> <span class="title-text">Experience</span></h2>
             <div class="timeline">
                 <div class="tl-item reveal">
                     <div class="card tilt-card">
@@ -2552,7 +2568,7 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">03.</span> Featured Projects</h2>
+            <h2 class="section-title reveal"><span class="s-num">03.</span> <span class="title-text">Featured Projects</span></h2>
 
             <!-- LAPTOP BOOT -->
             <div class="laptop-scene reveal" id="laptopScene">
@@ -2760,7 +2776,7 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">04.</span> Technical Arsenal</h2>
+            <h2 class="section-title reveal"><span class="s-num">04.</span> <span class="title-text">Technical Arsenal</span></h2>
             <div class="skills-wrap">
                 <div class="reveal">
                     <div class="skill-cat-head">
@@ -2842,7 +2858,7 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">05.</span> Credentials</h2>
+            <h2 class="section-title reveal"><span class="s-num">05.</span> <span class="title-text">Credentials</span></h2>
             <p class="sub-head reveal">// Certifications</p>
             <div class="certs-grid">
                 <div class="card cert-card reveal tilt-card">
@@ -2935,7 +2951,7 @@
             </div>
         </div>
         <div class="vault-inner section-inner">
-            <h2 class="section-title reveal"><span class="s-num">06.</span> Establish Connection</h2>
+            <h2 class="section-title reveal"><span class="s-num">06.</span> <span class="title-text">Establish Connection</span></h2>
             <div class="contact-wrap">
                 <p class="contact-intro reveal">Open to opportunities in Cybersecurity, MIS, Product Management, and
                     Quantitative Development. Reach out through any channel below.</p>
@@ -2978,6 +2994,9 @@
 
     <script>
         if (typeof feather !== 'undefined') feather.replace();
+
+        // Register GSAP plugins immediately
+        gsap.registerPlugin(ScrollTrigger);
 
         /* ── NAV SCROLL STATE ── */
         window.addEventListener('scroll', () => {
@@ -3054,13 +3073,6 @@
             });
         }
 
-        /* ── LIVE SESSION UPTIME COUNTER ── */
-        const startTime = performance.now();
-        setInterval(() => {
-            const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
-            document.getElementById('uptime-val').textContent = elapsed + 's';
-        }, 100);
-
         /* ── LENIS SMOOTH SCROLL INERTIA ── */
         const lenis = new Lenis({
             duration: 1.2,
@@ -3076,6 +3088,107 @@
             requestAnimationFrame(raf);
         }
         requestAnimationFrame(raf);
+
+        /* ── SCROLL SNAKE DYNAMIC BEZIER PATH & HONEYCOMB INTERACTIVITY ── */
+        window.activeSnakeTip = null;
+        let snakeScrollTrigger = null;
+
+        function updateSnakePath() {
+            const snakePath = document.getElementById('scroll-snake-path');
+            const snakeSvg = document.getElementById('scroll-snake-svg');
+            if (!snakePath || !snakeSvg) return;
+
+            // Update SVG height to cover full document scroll height
+            const scrollHeight = document.documentElement.scrollHeight;
+            snakeSvg.style.height = scrollHeight + 'px';
+
+            const sections = document.querySelectorAll('#hero, .vault-section, footer');
+            if (sections.length === 0) return;
+
+            const points = [];
+            const isMobile = window.innerWidth < 768;
+            const leftX = window.innerWidth * (isMobile ? 0.08 : 0.12);
+            const rightX = window.innerWidth * (isMobile ? 0.92 : 0.88);
+            const midX = window.innerWidth / 2;
+
+            // Start point at top center
+            points.push({ x: midX, y: 0 });
+
+            // Tracing points down the page
+            sections.forEach((sec, idx) => {
+                const rect = sec.getBoundingClientRect();
+                const sy = window.pageYOffset || document.documentElement.scrollTop;
+                const top = rect.top + sy;
+                const bottom = rect.bottom + sy;
+                const midY = top + rect.height / 2;
+
+                if (sec.id === 'hero') {
+                    points.push({ x: rightX, y: midY });
+                } else if (sec.tagName.toLowerCase() === 'footer') {
+                    points.push({ x: midX, y: top + rect.height / 2 });
+                } else {
+                    const title = sec.querySelector('.section-title');
+                    const titleY = title ? (title.getBoundingClientRect().top + sy + 15) : midY;
+
+                    // Point at title (left-ish)
+                    points.push({ x: leftX, y: titleY });
+
+                    // Midpoint between this section and the next (right-ish)
+                    if (idx < sections.length - 1) {
+                        const nextSec = sections[idx + 1];
+                        const nextTop = nextSec.getBoundingClientRect().top + sy;
+                        points.push({ x: rightX, y: (bottom + nextTop) / 2 });
+                    }
+                }
+            });
+
+            // End point at bottom
+            points.push({ x: midX, y: scrollHeight });
+
+            // Build vertical-first cubic Bezier spline
+            let d = `M ${points[0].x} ${points[0].y}`;
+            for (let i = 0; i < points.length - 1; i++) {
+                const p0 = points[i];
+                const p1 = points[i + 1];
+                const cp1x = p0.x;
+                const cp1y = p0.y + (p1.y - p0.y) / 2;
+                const cp2x = p1.x;
+                const cp2y = p0.y + (p1.y - p0.y) / 2;
+                d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p1.x} ${p1.y}`;
+            }
+
+            snakePath.setAttribute('d', d);
+
+            const pathLength = snakePath.getTotalLength();
+            snakePath.style.strokeDasharray = pathLength;
+            snakePath.style.strokeDashoffset = pathLength;
+
+            if (snakeScrollTrigger) {
+                snakeScrollTrigger.kill();
+            }
+
+            snakeScrollTrigger = ScrollTrigger.create({
+                trigger: "body",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: true,
+                onUpdate: (self) => {
+                    const progress = self.progress;
+                    snakePath.style.strokeDashoffset = pathLength * (1 - progress);
+                    try {
+                        window.activeSnakeTip = snakePath.getPointAtLength(pathLength * progress);
+                    } catch (e) {}
+                }
+            });
+        }
+
+        // Initialize and bind to load + resize
+        window.addEventListener('load', () => {
+            setTimeout(updateSnakePath, 250); // Let layout settle
+        });
+        window.addEventListener('resize', updateSnakePath);
+        // Also update whenever Lenis scrolls to ensure ScrollTrigger calculations are fresh
+        lenis.on('scroll', ScrollTrigger.update);
 
         /* ── CLIP-PATH CIRCULAR TRANSITION WIPE ON NAV CLICK ── */
         const wipeOverlay = document.createElement('div');
@@ -3473,9 +3586,22 @@
                     const wave = Math.sin(h.x * .002 + h.pulse) * Math.cos((h.y + sy * .25) * .002 + h.pulse);
                     const baseA = .04 + ((wave + 1) / 2) * .08;
 
-                    const dx = h.x - hMouseX, dy = h.y - (hMouseY + sy);
+                    const dx = h.x - hMouseX, dy = h.y - hMouseY;
                     const dist = Math.sqrt(dx * dx + dy * dy);
-                    const targetHover = dist < HOVER_R ? Math.pow(1 - dist / HOVER_R, 1.6) * 0.72 : 0;
+                    const targetHoverMouse = dist < HOVER_R ? Math.pow(1 - dist / HOVER_R, 1.6) * 0.72 : 0;
+
+                    let targetHoverSnake = 0;
+                    if (window.activeSnakeTip) {
+                        const sdx = h.x - window.activeSnakeTip.x;
+                        const sdy = h.y - (window.activeSnakeTip.y - sy);
+                        const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
+                        const SNAKE_GLOW_R = 180;
+                        if (sdist < SNAKE_GLOW_R) {
+                            targetHoverSnake = Math.pow(1 - sdist / SNAKE_GLOW_R, 1.8) * 0.88;
+                        }
+                    }
+
+                    const targetHover = Math.max(targetHoverMouse, targetHoverSnake);
                     h.hover += (targetHover - h.hover) * 0.18;
 
                     const finalA = baseA + h.hover;
@@ -3661,7 +3787,6 @@
         /* ════════════════════════════════
            GSAP SCROLLTRIGGER VAULT DOORS
         ════════════════════════════════ */
-        gsap.registerPlugin(ScrollTrigger);
 
         document.querySelectorAll('.vault-section').forEach(section => {
             const topPanel = section.querySelector('.vault-panel-top');
@@ -3715,22 +3840,37 @@
         });
 
         /* ── GSAP + SPLITTYPE TITLE REVEALS ── */
-        const splitTitles = new SplitType('.section-title', { types: 'chars, words' });
+        const splitTitles = new SplitType('.section-title .title-text', { types: 'chars, words' });
         document.querySelectorAll('.section-title').forEach(title => {
-            const chars = title.querySelectorAll('.char');
-            gsap.from(chars, {
+            const num = title.querySelector('.s-num');
+            const chars = title.querySelectorAll('.title-text .char');
+            
+            const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: title,
                     start: "top bottom-=50px",
                     end: "top center+=100px",
                     scrub: 0.8,
-                },
-                opacity: 0,
-                y: 15,
-                rotationX: -60,
-                stagger: 0.04,
-                ease: "power2.out"
+                }
             });
+
+            if (num) {
+                tl.from(num, {
+                    opacity: 0,
+                    x: -20,
+                    ease: "power2.out"
+                }, 0);
+            }
+
+            if (chars.length > 0) {
+                tl.from(chars, {
+                    opacity: 0,
+                    y: 15,
+                    rotationX: -60,
+                    stagger: 0.04,
+                    ease: "power2.out"
+                }, 0);
+            }
         });
 
         /* ── REVEAL OBSERVER ── */
