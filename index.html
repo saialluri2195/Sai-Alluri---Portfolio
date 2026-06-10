@@ -3169,11 +3169,32 @@
 
             const pathLength = snakePath.getTotalLength();
             snakePath.style.strokeDasharray = pathLength;
-            snakePath.style.strokeDashoffset = pathLength;
-
+            
             if (snakeScrollTrigger) {
                 snakeScrollTrigger.kill();
             }
+
+            // Initial sampling for path tip coordinates at load time
+            const initialSy = window.pageYOffset || document.documentElement.scrollTop;
+            let initialTargetY = initialSy + window.innerHeight / 2;
+            initialTargetY = Math.max(0, Math.min(scrollHeight, initialTargetY));
+
+            let initLow = 0;
+            let initHigh = pathLength;
+            for (let i = 0; i < 12; i++) {
+                const mid = (initLow + initHigh) / 2;
+                const pt = snakePath.getPointAtLength(mid);
+                if (pt.y < initialTargetY) {
+                    initLow = mid;
+                } else {
+                    initHigh = mid;
+                }
+            }
+            const initialLength = (initLow + initHigh) / 2;
+            snakePath.style.strokeDashoffset = pathLength - initialLength;
+            try {
+                window.activeSnakeTip = snakePath.getPointAtLength(initialLength);
+            } catch (e) {}
 
             snakeScrollTrigger = ScrollTrigger.create({
                 trigger: "body",
@@ -3181,11 +3202,28 @@
                 end: "bottom bottom",
                 scrub: true,
                 onUpdate: (self) => {
-                    const progress = self.progress;
-                    snakePath.style.strokeDashoffset = pathLength * (1 - progress);
+                    const sy = window.pageYOffset || document.documentElement.scrollTop;
+                    let targetY = sy + window.innerHeight / 2;
+                    targetY = Math.max(0, Math.min(scrollHeight, targetY));
+
+                    // Binary search for path length matching viewport center Y
+                    let low = 0;
+                    let high = pathLength;
+                    for (let i = 0; i < 12; i++) {
+                        const mid = (low + high) / 2;
+                        const pt = snakePath.getPointAtLength(mid);
+                        if (pt.y < targetY) {
+                            low = mid;
+                        } else {
+                            high = mid;
+                        }
+                    }
+                    const bestLength = (low + high) / 2;
+
+                    snakePath.style.strokeDashoffset = pathLength - bestLength;
                     try {
-                        window.activeSnakeTip = snakePath.getPointAtLength(pathLength * progress);
-                    } catch (e) { }
+                        window.activeSnakeTip = snakePath.getPointAtLength(bestLength);
+                    } catch (e) {}
                 }
             });
         }
