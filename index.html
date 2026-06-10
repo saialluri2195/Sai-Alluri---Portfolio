@@ -3169,7 +3169,7 @@
 
             const pathLength = snakePath.getTotalLength();
             snakePath.style.strokeDasharray = pathLength;
-            
+
             if (snakeScrollTrigger) {
                 snakeScrollTrigger.kill();
             }
@@ -3194,7 +3194,7 @@
             snakePath.style.strokeDashoffset = pathLength - initialLength;
             try {
                 window.activeSnakeTip = snakePath.getPointAtLength(initialLength);
-            } catch (e) {}
+            } catch (e) { }
 
             snakeScrollTrigger = ScrollTrigger.create({
                 trigger: "body",
@@ -3223,7 +3223,7 @@
                     snakePath.style.strokeDashoffset = pathLength - bestLength;
                     try {
                         window.activeSnakeTip = snakePath.getPointAtLength(bestLength);
-                    } catch (e) {}
+                    } catch (e) { }
                 }
             });
         }
